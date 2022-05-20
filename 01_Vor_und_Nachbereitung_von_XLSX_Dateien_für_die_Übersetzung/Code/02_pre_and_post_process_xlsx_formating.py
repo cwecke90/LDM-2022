@@ -10,7 +10,7 @@ from openpyxl.worksheet.datavalidation import DataValidation, DataValidationList
 from openpyxl.utils import get_column_letter
 
 sample_xlsx_dir = 'files'
-sample_xlsx_file = 'DPDHL-Chatbot-Export_pre_processed.xlsx'
+sample_xlsx_file = 'DPDHL-Chatbot-Export.xlsx'
 sample_xlsx_path = os.path.join(sample_xlsx_dir, sample_xlsx_file)
 
 
@@ -116,6 +116,16 @@ def toggle_non_translatable_font_color(xlsx_path, non_translatables=list(), colo
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
+
+    for worksheet in workbook:
+        for row in worksheet:
+            for cell in row:
+                cell_value = cell.value
+                if cell_value in non_translatables:
+                    if color:
+                        cell.font = Font(color="FF0000")
+                    else:
+                        cell.font = Font(color="000000")
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
@@ -123,7 +133,7 @@ def toggle_non_translatable_font_color(xlsx_path, non_translatables=list(), colo
 
 
 non_translatables = ['ITServices']
-# toggle_non_translatable_font_color(sample_xlsx_path, non_translatables, color=False)
+toggle_non_translatable_font_color(sample_xlsx_path, non_translatables, color=True)
 
 
 # *** ADD DATA VALIDATION TO CELLS *** #

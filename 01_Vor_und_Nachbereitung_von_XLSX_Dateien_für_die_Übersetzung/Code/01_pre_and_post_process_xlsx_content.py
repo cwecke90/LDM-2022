@@ -134,6 +134,8 @@ def toggle_column_visibility_by_name(xlsx_path, column_name, hide=True, out_file
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
+
+
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
