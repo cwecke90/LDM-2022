@@ -37,7 +37,26 @@ def pre_process_chatbot_export(original_df, src_lang="en", trg_lang="jp"):
     """
     # Create the df that should contain the formatted data after changing the original df so all column names are
     # applied!
-    return None
+    prev_id = None
+    columns = ['Intent', 'en', 'de', 'es']
+    current_row = pd.Series(index=columns)
+    result_df = pd.DataFrame(columns=columns)
+    iterations = 0
+
+    for index, row in original_df.iterrows():
+        if not iterations:
+            iterations += 1
+        id = row['Intent']
+        language = row['Language']
+        text = row['Training phrases']
+        if id != prev_id:
+            result_df = result_df.append(current_row, ignore_index=True)
+            current_row = pd.Series(index=columns)
+            current_row['Intent'] = id
+            prev_id = id
+        else:
+            current_row[language] = text
+    return result_df
 
 
 def post_process_chatbot_export(original_df, translated_df):
@@ -95,14 +114,16 @@ def toggle_column_visibility(xlsx_path, column_letter, hide=True, out_file_suffi
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
+
     for worksheet in workbook:
         worksheet.column_dimensions[column_letter].hidden = hide
+
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
     workbook.save(hidden_out_path)
 
-toggle_column_visibility(pre_process_out_path)
+toggle_column_visibility(pre_process_out_path, 'A')
 
 
 # *** HIDING COLUMNS BY COLUMN NAME *** #
@@ -134,8 +155,17 @@ def toggle_column_visibility_by_name(xlsx_path, column_name, hide=True, out_file
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
+    target_col = None
 
-
+    for worksheet in workbook:
+        header_row = worksheet[1]
+        for cell in header_row:
+            cell_value = cell.value
+            cell_column = cell.column_letter
+            if column_name == cell_value:
+                target_col = cell_column
+        if target_col:
+            worksheet.column_dimensions[target_col].hidden = hide
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)

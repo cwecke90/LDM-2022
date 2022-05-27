@@ -14,7 +14,6 @@ sample_xlsx_dir = 'files'
 sample_xlsx_file = 'DPDHL-Chatbot-Export.xlsx'
 sample_xlsx_path = os.path.join(sample_xlsx_dir, sample_xlsx_file)
 
-
 # *** REFORMATING XLSX CONTENTS *** #
 # Editing the contents of XLSX files to prepare them for translation.
 
@@ -27,6 +26,7 @@ sample_xlsx_path = os.path.join(sample_xlsx_dir, sample_xlsx_file)
 xlsx_content_df = pd.read_excel(sample_xlsx_path)
 
 
+# If you want to prepare the file for translation into other languages, do this
 def pre_process_chatbot_export(original_df, src_lang="en", trg_lang="jp"):
     """
     Reformats DPDHL chatbot export files and prepares them for translation.
@@ -58,6 +58,66 @@ def post_process_chatbot_export(original_df, translated_df):
     return original_df
 
 
+# If you want to prepare the file for post editing, do this
+
+def pre_process_chatbot_export(original_df):
+    """
+    Reformats DPDHL chatbot export files and prepares them for translation.
+    :param original_df: a data frame with the contents of a chatbot export
+    :return: the data to be translated
+    """
+    # Create the df that should contain the formatted data after changing the original df so all column names are
+    # applied!
+    prev_id = None
+    columns = ['Intent', 'en', 'de', 'es']
+    current_row = pd.Series(index=columns)
+    result_df = pd.DataFrame(columns=columns)
+    iterations = 0
+
+    for index, row in original_df.iterrows():
+        if not iterations:
+            iterations += 1
+        id = row['Intent']
+        language = row['Language']
+        text = row['Training phrases']
+        if id != prev_id:
+            result_df = result_df.append(current_row, ignore_index=True)
+            current_row = pd.Series(index=columns)
+            current_row['Intent'] = id
+            prev_id = id
+        else:
+            current_row[language] = text
+    return result_df
+
+
+pre_process_chatbot_export(xlsx_content_df)
+
+
+def post_process_chatbot_export(original_df, translated_df):
+    """
+    Reformats translated DPDHL chatbot export files after translation.
+    :param original_df: a data frame with the original contents of a chatbot export
+    :param translated_df: a data frame with the translated contents of a chatbot export
+    :return: the restored original data format with translations
+    """
+    result_df = pd.DataFrame()
+    for index, row in original_df.iterrows():
+        original_intent = row['Intent']
+        original_lang = row['Language']
+        # From the translated data, filter all that match the current ID
+        translated_rows = translated_df[translated_df['Intent'] == original_intent]
+        # If the filter comes up empty, skip this row
+        if translated_rows.empty:
+            continue
+        # Otherwise there should only be one row filtered for any ID
+        # Knowing this, the list returned by values can only have a single element!
+        translated_text = translated_rows[original_lang].values[0]
+        if not pd.isna(translated_text):
+            row['Training phrases'] = translated_rows[original_lang]
+        result_df = result_df.append(row)
+    return result_df
+
+
 xlsx_pre_processed_df = pre_process_chatbot_export(xlsx_content_df)
 
 
@@ -72,7 +132,6 @@ def save_processed_df(processed_df, out_path):
     :return: None
     """
     with pd.ExcelWriter(out_path, engine='openpyxl') as writer:
-
         sheet_name = 'Content'
         processed_df.to_excel(writer, sheet_name=sheet_name, index=False, header=True)
 
@@ -88,6 +147,13 @@ pre_process_out_dir_name = sample_xlsx_dir
 pre_process_out_file_name = Path(sample_xlsx_file).stem
 pre_process_out_path = os.path.join(pre_process_out_dir_name, f'{pre_process_out_file_name}_pre_processed.xlsx')
 save_processed_df(xlsx_pre_processed_df, pre_process_out_path)
+
+# And for post processing
+post_process_out_dir_name = sample_xlsx_dir
+post_process_out_file_name = Path(sample_xlsx_file).stem
+post_process_out_path = os.path.join(post_process_out_dir_name, f'{post_process_out_file_name}_post_processed.xlsx')
+xlsx_post_processed_df = post_process_chatbot_export(xlsx_content_df, xlsx_pre_processed_df)
+save_processed_df(xlsx_post_processed_df, post_process_out_path)
 
 
 # *** HIDING COLUMNS AND ROWS *** #
@@ -110,7 +176,8 @@ def toggle_column_visibility(xlsx_path, column_letter, hide=True, out_file_suffi
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
     workbook.save(hidden_out_path)
 
-toggle_column_visibility(pre_process_out_path)
+
+toggle_column_visibility(pre_process_out_path, 'A')
 
 
 # *** HIDING COLUMNS BY COLUMN NAME *** #

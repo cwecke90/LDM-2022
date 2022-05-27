@@ -10,7 +10,7 @@ from openpyxl.worksheet.datavalidation import DataValidation, DataValidationList
 from openpyxl.utils import get_column_letter
 
 sample_xlsx_dir = 'files'
-sample_xlsx_file = 'DPDHL-Chatbot-Export.xlsx'
+sample_xlsx_file = 'DPDHL-Chatbot-Export_pre_processed.xlsx'
 sample_xlsx_path = os.path.join(sample_xlsx_dir, sample_xlsx_file)
 
 
@@ -26,6 +26,13 @@ def toggle_background_color(xlsx_path, color=True, out_file_suffix='_bg_color_ch
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
+    for worksheet in workbook:
+        column = worksheet['A']
+        for cell in column:
+            if color:
+                cell.fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type="solid")
+            else:
+                cell.fill = PatternFill(fill_type=None)
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
@@ -62,13 +69,38 @@ def toggle_non_translatable_background_color(xlsx_path, column_name, color=True,
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
+    colored_rows = list()
+    target_col = None
+
+    for worksheet in workbook:
+        rows = worksheet.rows
+        header_row = worksheet[1]
+        for cell in header_row:
+            cell_value = cell.value
+            cell_column_letter = cell.column_letter
+            if cell_value == column_name:
+                target_col = cell_column_letter
+        for row in rows:
+            for cell in row:
+                cell_value = cell.value
+                cell_column_letter = cell.column_letter
+                cell_row = cell.row
+                if cell_value and cell_column_letter == target_col:
+                    colored_rows.append(cell_row)
+        for row_index in colored_rows:
+            row = worksheet[row_index]
+            for cell in row:
+                if color:
+                    cell.fill = PatternFill(start_color='FF0000', end_color='FF0000', fill_type="solid")
+                else:
+                    cell.fill = PatternFill(fill_type=None)
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
     workbook.save(hidden_out_path)
 
 
-toggle_non_translatable_background_color(sample_xlsx_path, 'Translate')
+toggle_non_translatable_background_color(sample_xlsx_path, 'de', color=True)
 
 
 # *** CHANGE FONT COLOR *** #
@@ -83,6 +115,13 @@ def toggle_font_color(xlsx_path, color=True, out_file_suffix='_font_color_change
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
+    for worksheet in workbook:
+        column = worksheet['D']
+        for cell in column:
+            if color:
+                cell.font = Font(color='FF0000')
+            else:
+                cell.font = Font(color='000000')
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
@@ -116,16 +155,6 @@ def toggle_non_translatable_font_color(xlsx_path, non_translatables=list(), colo
     :return: None
     """
     workbook = openpyxl.load_workbook(xlsx_path)
-
-    for worksheet in workbook:
-        for row in worksheet:
-            for cell in row:
-                cell_value = cell.value
-                if cell_value in non_translatables:
-                    if color:
-                        cell.font = Font(color="FF0000")
-                    else:
-                        cell.font = Font(color="000000")
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
@@ -133,7 +162,7 @@ def toggle_non_translatable_font_color(xlsx_path, non_translatables=list(), colo
 
 
 non_translatables = ['ITServices']
-toggle_non_translatable_font_color(sample_xlsx_path, non_translatables, color=True)
+# toggle_non_translatable_font_color(sample_xlsx_path, non_translatables, color=False)
 
 
 # *** ADD DATA VALIDATION TO CELLS *** #
