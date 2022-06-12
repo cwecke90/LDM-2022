@@ -40,12 +40,22 @@ def add_comments_as_columns(xlsx_path, out_file_suffix='_comments_added'):
     """
     workbook = openpyxl.load_workbook(xlsx_path)
 
-    # TODO: Write your code here! Feel free to delete this comment!
-
-    hidden_out_dir = os.path.dirname(xlsx_path)
-    hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
-    hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
-    workbook.save(hidden_out_path)
+    for worksheet in workbook:
+        rows = worksheet.rows
+        for row_index, row in enumerate(rows):
+            for cell in row:
+                if cell.comment:
+                    get_comment = re.search("\\s\\s\\s\\s\\s.*\\.", cell.comment.text)
+                    get_comment_clean = get_comment.group(0).strip()
+                    print(get_comment_clean)
+    #     header_row = worksheet[1]
+    #     for cell in header_row:
+    #         if cell.value != "Source Comment":
+    #             worksheet.cell(row=1, column=1).value = 'Source Comment'
+    # hidden_out_dir = os.path.dirname(xlsx_path)
+    # hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
+    # hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
+    # workbook.save(hidden_out_path)
 
 
 # TASK 2
@@ -54,4 +64,4 @@ def add_comments_as_columns(xlsx_path, out_file_suffix='_comments_added'):
 # If everything works, you should find a new file in the same directory as "sample_file"
 # When you start working on this homework you will find a file already there to help you visualize the output!
 
-# TODO: Write your code here! Feel free to delete this comment!
+add_comments_as_columns(sample_file)
