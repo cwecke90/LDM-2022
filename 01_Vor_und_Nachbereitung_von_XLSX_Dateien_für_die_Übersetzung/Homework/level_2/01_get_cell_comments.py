@@ -31,7 +31,7 @@ sample_file = os.path.join('files', 'sample_translation.xlsx')
 # Hint: much like cell.hidden, there's an attribute that contains comments!
 # Hint: comment values consist of more than just comment text. You may have to use regex to get what you want!
 
-def add_comments_as_columns(xlsx_path, out_file_suffix='_comments_added'):
+def add_comments_as_columns(xlsx_path, out_file_suffix='_comments_added_cw'):
     """
     Finds comments in all cells of an XLSX file and writes them to a separate column.
     :param xlsx_path: path of XLSX file to be formatted
@@ -42,20 +42,40 @@ def add_comments_as_columns(xlsx_path, out_file_suffix='_comments_added'):
 
     for worksheet in workbook:
         rows = worksheet.rows
+        headings = []  # define an empty list to fetch column header names
         for row_index, row in enumerate(rows):
             for cell in row:
-                if cell.comment:
-                    get_comment = re.search("\\s\\s\\s\\s\\s.*\\.", cell.comment.text)
-                    get_comment_clean = get_comment.group(0).strip()
-                    print(get_comment_clean)
-    #     header_row = worksheet[1]
-    #     for cell in header_row:
-    #         if cell.value != "Source Comment":
-    #             worksheet.cell(row=1, column=1).value = 'Source Comment'
-    # hidden_out_dir = os.path.dirname(xlsx_path)
-    # hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
-    # hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
-    # workbook.save(hidden_out_path)
+                if cell.comment:  # check every cell if it has a comment
+                    target_col = cell.column
+                    header_name = worksheet.cell(row=1, column=target_col).value
+                    headings.append(header_name)  # add existing column to empty list
+                    header_name_new = header_name + " " + "comment"  # define new column header names
+                    if header_name_new not in headings:
+                        last_column = worksheet.max_column
+                        worksheet.cell(row=1, column=last_column+1).value = header_name_new
+                        get_comment_column = re.search("\\s\\s\\s\\s\\s.*[:.!?\\-]", cell.comment.text)
+                        get_comment_clean_column = get_comment_column.group(0).strip()
+                        comment_cell_row = cell.row
+                        last_column_row = worksheet.max_column
+                        worksheet.cell(row=comment_cell_row, column=last_column_row).value = get_comment_clean_column
+                        headings.append(header_name_new)  # add newly added column headers to list of column headers
+                    else:
+                        header_row = worksheet[1]
+                        for cell_new in header_row:
+                            if cell_new.value == header_name_new:
+                                new_column_pos = cell_new.column  # fetch column number of newly added column headers
+                                get_comment_column = re.search("\\s\\s\\s\\s\\s.*[:.!?\\-]", cell.comment.text)
+                                get_comment_clean_column = get_comment_column.group(0).strip()
+                                comment_cell_row = cell.row
+                                worksheet.cell(row=comment_cell_row, column=new_column_pos).value = \
+                                    get_comment_clean_column
+        header_row_new = worksheet[1]  # add bold formatting to newly added column headers
+        for cell_header_new in header_row_new:
+            cell_header_new.font = Font(bold=True)
+    hidden_out_dir = os.path.dirname(xlsx_path)
+    hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
+    hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
+    workbook.save(hidden_out_path)
 
 
 # TASK 2
