@@ -25,6 +25,7 @@ sample_file = os.path.join('files', 'sample_translation.xlsx')
 # It shouldn't return anything but save a new file after it's done
 # Hint: The logic is very similar to our function "toggle_non_translatable_background_color"!
 
+# TODO: Write your code here! Feel free to delete this comment!
 
 def hide_row_by_regex(xlsx_path, column_name, regex, out_file_suffix='_cols_hidden'):
     """
@@ -46,20 +47,18 @@ def hide_row_by_regex(xlsx_path, column_name, regex, out_file_suffix='_cols_hidd
                 target_col = cell.column
         for row_index, row in enumerate(rows):
             for cell in row:
-                if cell.column == target_col and cell.value != column_name:
-                    if re.search(regex, cell.value):
-                        hidden_rows.append(cell.row)
-                    else:
-                        print("Expression not found!")
+                cell_column = cell.column
+                cell_value = str(cell.value)
+                if not cell_value:
+                    continue
+                if cell_column == target_col and re.search(regex, cell_value):
+                    hidden_rows.append(cell.row)
         for row_index in hidden_rows:
             worksheet.row_dimensions[row_index].hidden = True
     hidden_out_dir = os.path.dirname(xlsx_path)
     hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
     hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
     workbook.save(hidden_out_path)
-
-
-# hide_row_by_regex(sample_file, "Source text", "DHL|Group")
 
 
 # TASK 2
@@ -70,35 +69,6 @@ def hide_row_by_regex(xlsx_path, column_name, regex, out_file_suffix='_cols_hidd
 # Use your function "hide_row_by_regex" to hide all rows with creation dates not from 2022!
 # Hint: openpyxl will parse dates in the format YYYY-MM-DD HH:MM:SS
 
-def hide_row_by_regex(xlsx_path, column_name, regex, out_file_suffix='_cols_hidden'):
-    """
-    Hides rows in an XLSX file based on the values in certain cells.
-    :param xlsx_path: path of XLSX file to be formatted
-    :param column_name: header name of the column that should be checked for cell values
-    :param regex: regular expression to check cell values with
-    :param out_file_suffix: suffix added to the output file name before saving
-    :return: None
-    """
-    target_col = None
-    hidden_rows = list()
-    workbook = openpyxl.load_workbook(xlsx_path)
-    for worksheet in workbook:
-        rows = worksheet.rows
-        header_row = worksheet[1]
-        for cell in header_row:
-            if cell.value == column_name:
-                target_col = cell.column
-        for row_index, row in enumerate(rows):
-            for cell in row:
-                if cell.column == target_col and cell.value != column_name:
-                    if not re.search(regex, str(cell.value)):
-                        hidden_rows.append(cell.row)
-        for row_index in hidden_rows:
-            worksheet.row_dimensions[row_index].hidden = True
-    hidden_out_dir = os.path.dirname(xlsx_path)
-    hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
-    hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
-    workbook.save(hidden_out_path)
+# TODO: Write your code here! Feel free to delete this comment!
 
-
-hide_row_by_regex(sample_file, "Creation Date", "2022-[0-9]{2}-[0-9]{2}\\s[0-9]{2}:[0-9]{2}:[0-9]{2}")
+hide_row_by_regex(sample_file, 'Creation Date', r'^2022')
