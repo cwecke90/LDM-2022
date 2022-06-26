@@ -47,8 +47,13 @@ def add_comments_as_columns(xlsx_path, out_file_suffix='_comments_added'):
         for row in rows:
             for cell in row:
                 cell_column = get_column_letter(cell.column)
+                print(cell_column)
                 cell_row = cell.row
+                print("----")
+                print(cell_row)
                 cell_header = worksheet[f'{cell_column}1'].value
+                print("----")
+                print(cell_header)
                 cell_comment = cell.comment
                 if not cell_comment:
                     continue
@@ -60,10 +65,10 @@ def add_comments_as_columns(xlsx_path, out_file_suffix='_comments_added'):
                     worksheet[f'{current_max_col}1'] = f'{cell_header} comment'
                     comment_cols[cell_header] = current_max_col
                 worksheet[f'{comment_cols[cell_header]}{cell_row}'] = comment_text
-    hidden_out_dir = os.path.dirname(xlsx_path)
-    hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
-    hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
-    workbook.save(hidden_out_path)
+    # hidden_out_dir = os.path.dirname(xlsx_path)
+    # hidden_out_file = Path(xlsx_path).stem + out_file_suffix + '.xlsx'
+    # hidden_out_path = os.path.join(hidden_out_dir, hidden_out_file)
+    # workbook.save(hidden_out_path)
 
 
 # TASK 2
