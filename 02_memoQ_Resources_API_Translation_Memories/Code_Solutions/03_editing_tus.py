@@ -40,10 +40,10 @@ def get_tus(tm_guid):
     return tus
 
 
-tu_data = get_tus(tm_guid)
-
-print('Acquired tus:')
-print(tu_data)
+# tu_data = get_tus(tm_guid)
+#
+# print('Acquired tus:')
+# print(tu_data)
 
 
 # *** FILTER TUS IN A TM *** #
@@ -62,11 +62,11 @@ def filter_tus_by_metadata(tu_data, field_name, field_value):
     return tus
 
 
-tu_data = get_tus(tm_guid)
-tus_filtered = filter_tus_by_metadata(tu_data, 'Domain', 'Logistics')
-
-print(f"Filtered {len(tus_filtered)} of {len(tu_data)} tus:")
-print(tus_filtered)
+# tu_data = get_tus(tm_guid)
+# tus_filtered = filter_tus_by_metadata(tu_data, 'Domain', 'Logistics')
+#
+# print(f"Filtered {len(tus_filtered)} of {len(tu_data)} tus:")
+# print(tus_filtered)
 
 
 # *** GETTING SOURCE AND TARGET SEGMENTS *** #
@@ -90,15 +90,15 @@ def get_tu_trgs(tu_data):
     return trg_segs
 
 
-tu_data = get_tus(tm_guid)
-tu_src_segs = get_tu_srcs(tu_data)
-tu_trg_segs = get_tu_trgs(tu_data)
-
-
-print(f'Found {len(tu_src_segs)} source segments')
-print(tu_src_segs)
-print(f'Found {len(tu_src_segs)} target segments')
-print(tu_trg_segs)
+# tu_data = get_tus(tm_guid)
+# tu_src_segs = get_tu_srcs(tu_data)
+# tu_trg_segs = get_tu_trgs(tu_data)
+#
+#
+# print(f'Found {len(tu_src_segs)} source segments')
+# print(tu_src_segs)
+# print(f'Found {len(tu_src_segs)} target segments')
+# print(tu_trg_segs)
 
 
 # *** SAVING TUS AS A XLSX FILE *** #
@@ -121,7 +121,6 @@ def save_tus_to_xlsx(tm_guid):
     """
     tu_data = get_tus(tm_guid)
     tu_df_cols = list(tu_data[1].keys())
-    print(tu_df_cols)
     tu_df_cols.remove('CustomMetas')
     for custom_meta in tu_data[1].get('CustomMetas', list()):
         custom_name = custom_meta.get('Name')
@@ -141,7 +140,7 @@ def save_tus_to_xlsx(tm_guid):
             else:
                 tu_df.at[row_id, field_name] = field_value
         row_id += 1
-    tu_df.to_excel('sample_tm.xlsx', index=None)
+    # tu_df.to_excel('sample_tm.xlsx', index=None)
 
 
 save_tus_to_xlsx(tm_guid)
