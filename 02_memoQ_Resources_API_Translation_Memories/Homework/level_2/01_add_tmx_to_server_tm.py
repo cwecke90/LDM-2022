@@ -4,6 +4,7 @@
 
 import os
 import requests
+import regex as re
 
 from lxml import etree
 from memoq import get_auth_token, get_tm
@@ -26,8 +27,33 @@ sample_guid = '61359674-9c32-49b6-bb2b-c84b587e0d09'
 # Use the Guid of the server tm you acquired during the course
 
 def add_tmx_to_server_tm(tm_guid, tmx_path):
-    pass
-    # TODO: Write your code here! Feel free to delete this comment!
+    tmx_tree = etree.parse(tmx_path)
+    translation_units = tmx_tree.xpath('.//tu')
+    token = get_auth_token()
+    for tus in translation_units:
+        tu_data = dict()
+        tu_segments = tus.xpath('.//seg')
+        src_segment = tu_segments[0]
+        src_segment_text = etree.tostring(src_segment, encoding='utf-8').decode()
+        src_segment_text = re.sub("<seg([^>]?)+>(.+?)<\/seg>", "\g<2>", src_segment_text)
+        src_segment_text = src_segment_text.strip()
+        src_context_pre = tus.find('.//prop[@type="x-context-pre"]')
+        src_context_post = tus.find('.//prop[@type="x-context-post"]')
+        if src_context_pre is not None:
+            src_context_pre_text = src_context_pre.text
+            tu_data['PrecedingSegment'] = src_context_pre_text
+        if src_context_post is not None:
+            src_context_post_text = src_context_post.text
+            tu_data['FollowingSegment'] = src_context_post_text
+        trg_segment = tu_segments[1]
+        trg_segment_text = etree.tostring(trg_segment, encoding='utf-8').decode()
+        trg_segment_text = re.sub("<seg([^>]?)+>(.+?)<\/seg>", "\g<2>", trg_segment_text)
+        trg_segment_text = trg_segment_text.strip()
+        tu_data['SourceSegment'] = f"<seg>{src_segment_text}</seg>"
+        tu_data['TargetSegment'] = f"<seg>{trg_segment_text}</seg>"
+        endpoint_url = f'https://mimesis.memoq.com:9091/loctimizetrain/memoqserverhttpapi/v1/tms/{tm_guid}/' \
+                       f'entries/create?authToken={token}'
+        requests.post(endpoint_url, data=tu_data)
 
 
 # TASK 2
@@ -36,4 +62,17 @@ def add_tmx_to_server_tm(tm_guid, tmx_path):
 # Use the functions we learned about in the course to get the number of tus in the server tm
 # Print out the number of tus to verify your function works!
 
-# TODO: Write your code here! Feel free to delete this comment!
+tm_data = get_tm(sample_guid)
+tm_entries = tm_data.get('NumEntries', 0)
+
+print(f'Before adding TU. There are currently {tm_entries} tus in the TM')
+
+
+add_tmx_to_server_tm(sample_guid, sample_tmx)
+
+tm_data = get_tm(sample_guid)
+tm_entries = tm_data.get('NumEntries', 0)
+
+print(f'After adding TU. There are currently {tm_entries} tus in the TM')
+
+

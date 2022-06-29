@@ -3,6 +3,7 @@
 # We should also remind ourselves, that we can transfer that knowledge to working with a variety of other API endpoints
 # This will be useful in the future when we're working with machine translation services!
 # For now, we will apply what we know to another API endpoint.
+import json
 
 import requests
 
@@ -28,7 +29,10 @@ def get_slp_langs(token):
         'Authorization': f'Token {token}',
         'accept': 'application/json'
     }
-    # TODO: Write your code here! Feel free to delete this comment!
+    response = requests.get(endpoint_url, headers=header)
+    response_json = response.json()
+    for lng in response_json["results"]:
+        locales.append(lng["locale"])
     return locales
 
 
@@ -36,7 +40,7 @@ def get_slp_langs(token):
 # Test your function! Use the function "get_slp_langs" to acquire all available languages
 # Then print the results out to the console
 
-# TODO: Write your code here! Feel free to delete this comment!
+print(get_slp_langs(slp_token))
 
 
 # TASK 3
@@ -59,7 +63,11 @@ def filter_slp_langs(token, active=True):
         'Authorization': f'Token {token}',
         'accept': 'application/json'
     }
-    # TODO: Write your code here! Feel free to delete this comment!
+    response = requests.get(endpoint_url, headers=header)
+    response_json = response.json()
+    for lng in response_json["results"]:
+        if lng["active"] == active:
+            locales.append(lng["locale"])
     return locales
 
 
@@ -67,4 +75,4 @@ def filter_slp_langs(token, active=True):
 # Test your function! Use the function "filter_slp_langs" to acquire all active and inactive languages!
 # Then print the results out to the console
 
-# TODO: Write your code here! Feel free to delete this comment!
+print(filter_slp_langs(slp_token))
