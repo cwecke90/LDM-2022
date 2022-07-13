@@ -4,10 +4,8 @@
 # This will be useful in the future when we're working with machine translation services!
 # For now, we will apply what we know to another API endpoint.
 
-import json
-import os
-
 import requests
+import os
 
 os.environ["https_proxy"] = "http://cloudproxy.dhl.com:10123"
 
@@ -33,10 +31,10 @@ def get_slp_langs(token):
         'Authorization': f'Token {token}',
         'accept': 'application/json'
     }
-    response = requests.get(endpoint_url, headers=header)
-    response_json = response.json()
-    for lng in response_json["results"]:
-        locales.append(lng["locale"])
+    locale_results = requests.get(endpoint_url, headers=header).json()
+    for locale_data in locale_results.get('results', list()):
+        locale = locale_data.get('locale')
+        locales.append(locale) if locale else None
     return locales
 
 
@@ -44,7 +42,9 @@ def get_slp_langs(token):
 # Test your function! Use the function "get_slp_langs" to acquire all available languages
 # Then print the results out to the console
 
-print(get_slp_langs(slp_token))
+slp_langs = get_slp_langs(slp_token)
+
+print(slp_langs)
 
 
 # TASK 3
@@ -67,11 +67,12 @@ def filter_slp_langs(token, active=True):
         'Authorization': f'Token {token}',
         'accept': 'application/json'
     }
-    response = requests.get(endpoint_url, headers=header)
-    response_json = response.json()
-    for lng in response_json["results"]:
-        if lng["active"] == active:
-            locales.append(lng["locale"])
+    locale_results = requests.get(endpoint_url, headers=header).json()
+    for locale_data in locale_results.get('results', list()):
+        locale = locale_data.get('locale')
+        locale_active = locale_data.get('active')
+        if bool(locale_active) == active:
+            locales.append(locale) if locale else None
     return locales
 
 
